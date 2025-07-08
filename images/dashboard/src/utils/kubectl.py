@@ -13,7 +13,10 @@ from kubernetes.config.config_exception import ConfigException
 
 
 async def describe_release_pods(namespace: str, box_name: str) -> bool:
-    config.load_incluster_config()
+    try:
+        config.load_kube_config()
+    except ConfigException:
+        config.load_incluster_config()
     v1 = client.CoreV1Api()
     ret = v1.list_namespaced_pod(namespace=namespace)
     all_running = True
@@ -28,7 +31,10 @@ async def describe_release_pods(namespace: str, box_name: str) -> bool:
 
 
 def list_pods(namespace):
-    config.load_incluster_config()
+    try:
+        config.load_kube_config()
+    except ConfigException:
+        config.load_incluster_config()
     v1 = client.CoreV1Api()
     ret = v1.list_namespaced_pod(namespace=namespace)
     pod_list = []
