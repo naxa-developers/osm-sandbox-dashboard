@@ -1,84 +1,84 @@
 osm-seed:
-  environment: dev
-  cloudProvider: aws
-  AWS_S3_BUCKET: s3://osmsandbox
-  AWS_SSL_ARN: 'none'
-  serviceType: ClusterIP
-  createClusterIssuer: false
-  domain: {{BOX_NAME}}.boxes.osmsandbox.naxadev.com
-  adminEmail: osm-sandbox-admins@googlegroups.com
+  environment: {{SANDBOX_ENVIRONMENT}}
+  cloudProvider: {{SANDBOX_CLOUD_PROVIDER}}
+  AWS_S3_BUCKET: {{SANDBOX_AWS_S3_BUCKET}}
+  AWS_SSL_ARN: {{SANDBOX_AWS_SSL_ARN}}
+  serviceType: {{SANDBOX_SERVICE_TYPE}}
+  createClusterIssuer: {{SANDBOX_CREATE_CLUSTER_ISSUER}}
+  domain: "{{BOX_NAME}}.{{SANDBOX_BASE_DOMAIN}}"
+  adminEmail: {{SANDBOX_ADMIN_EMAIL}}
   db:
-    enabled: true
+    enabled: {{SANDBOX_DB_ENABLED}}
     nodeSelector:
-      enabled: true
-      label_key: nodegroup_type
+      enabled: {{SANDBOX_NODE_SELECTOR_ENABLED}}
+      label_key: {{SANDBOX_NODE_SELECTOR_LABEL_KEY}}
       label_value: {{LABEL_VALUE}}
     env:
       POSTGRES_DB: {{SANDBOX_PG_DB_NAME}}
       POSTGRES_USER: {{SANDBOX_PG_DB_USER}}
       POSTGRES_PASSWORD: {{SANDBOX_PG_DB_PASSWORD}}
-      LOG_STATEMENT: "mod"
+      LOG_STATEMENT: {{SANDBOX_LOG_STATEMENT}}
     persistenceDisk:
-      enabled: false
+      enabled: {{SANDBOX_PERSISTENCE_DISK_ENABLED}}
     resources:
-      enabled: false
-    sharedMemorySize: 256Mi
-    livenessProbeExec: false
+      enabled: {{SANDBOX_DB_RESOURCES_ENABLED}}
+    sharedMemorySize: {{SANDBOX_DB_SHARED_MEMORY_SIZE}}
+    livenessProbeExec: {{SANDBOX_DB_LIVENESS_PROBE_EXEC}}
   # ====================================================================================================
   # Variables for osm-seed website
   # ====================================================================================================
   web:
-    enabled: true
+    enabled: {{SANDBOX_WEB_ENABLED}}
     nodeSelector:
-      enabled: true
-      label_key: nodegroup_type
+      enabled: {{SANDBOX_NODE_SELECTOR_ENABLED}}
+      label_key: {{SANDBOX_NODE_SELECTOR_LABEL_KEY}}
       label_value: {{LABEL_VALUE}}
-    replicaCount: 1
+    replicaCount: {{SANDBOX_WEB_REPLICA_COUNT}}
     serviceAnnotations:
-      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "300"
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "{{SANDBOX_WEB_LB_TIMEOUT}}"
     # ingressDomain: www.{{BOX_NAME}}.k3s.appzite
-    ingressDomain: www.{{BOX_NAME}}.boxes.osmsandbox.naxadev.com
+    ingressDomain: www.{{BOX_NAME}}.{{SANDBOX_BASE_DOMAIN}}
     env:
-      MAILER_ADDRESS: 'none'
-      MAILER_DOMAIN: osmsandbox.us
-      MAILER_USERNAME: 'none'
-      MAILER_PASSWORD: 'none'
+      MAILER_ADDRESS: {{SANDBOX_MAILER_ADDRESS}}
+      MAILER_DOMAIN: {{SANDBOX_MAILER_DOMAIN}}
+      MAILER_USERNAME: {{SANDBOX_MAILER_USERNAME}}
+      MAILER_PASSWORD: {{SANDBOX_MAILER_PASSWORD}}
       OSM_id_key: {{SANDBOX_OSM_id_key}}
       OAUTH_CLIENT_ID: {{SANDBOX_OAUTH_CLIENT_ID}}
       OAUTH_KEY: {{SANDBOX_OAUTH_KEY}}
       MAILER_FROM: {{SANDBOX_MAILER_FROM}}
       NOMINATIM_URL: {{SANDBOX_NOMINATIM_URL}}
       OVERPASS_URL: {{SANDBOX_OVERPASS_URL}}
-      NEW_RELIC_LICENSE_KEY: 'none'
-      NEW_RELIC_APP_NAME: 'none'
+      NEW_RELIC_LICENSE_KEY: {{SANDBOX_NEW_RELIC_LICENSE_KEY}}
+      NEW_RELIC_APP_NAME: {{SANDBOX_NEW_RELIC_APP_NAME}}
       ORGANIZATION_NAME: {{SANDBOX_ORGANIZATION_NAME}}
-      WEBSITE_STATUS: "online"
+      WEBSITE_STATUS: {{SANDBOX_WEBSITE_STATUS}}
       BACKUP_FILE_URL: {{SANDBOX_BACKUP_FILE_URL}}
       TM_OAUTH_CLIENT_ID: {{SANDBOX_TM_OAUTH_CLIENT_ID}}
       TM_OAUTH_CLIENT_SECRET_HASHED: {{SANDBOX_TM_OAUTH_CLIENT_SECRET_HASHED}}
     resources:
-      enabled: false
+      enabled: {{SANDBOX_WEB_RESOURCES_ENABLED}}
     autoscaling:
-      enabled: false
-      minReplicas: 1
-      maxReplicas: 10
-      cpuUtilization: 80
-    sharedMemorySize: 16Mi
+      enabled: {{SANDBOX_WEB_AUTOSCALING_ENABLED}}
+      minReplicas: {{SANDBOX_WEB_MIN_REPLICAS}}
+      maxReplicas: {{SANDBOX_WEB_MAX_REPLICAS}}
+      cpuUtilization: {{SANDBOX_WEB_CPU_UTILIZATION}}
+    sharedMemorySize: {{SANDBOX_WEB_SHARED_MEMORY_SIZE}}
   populateApidb:
     enabled: {{SHOULD_POPULATE_DB}}
     nodeSelector:
-      enabled: true
-      label_key: nodegroup_type
+      enabled: {{SANDBOX_NODE_SELECTOR_ENABLED}}
+      label_key: {{SANDBOX_NODE_SELECTOR_LABEL_KEY}}
       label_value: {{LABEL_VALUE}}
     env:
       URL_FILE_TO_IMPORT: {{URL_FILE_TO_IMPORT}}
     resources:
-      enabled: false
+      enabled: {{SANDBOX_POPULATE_APIDB_RESOURCES_ENABLED}}
   memcached:
-    enabled: true
+    enabled: {{SANDBOX_MEMCACHED_ENABLED}}
     nodeSelector:
-      enabled: true
-      label_key: nodegroup_type
+      enabled: {{SANDBOX_NODE_SELECTOR_ENABLED}}
+      label_key: {{SANDBOX_NODE_SELECTOR_LABEL_KEY}}
       label_value: {{LABEL_VALUE}}
     resources:
-      enabled: false
+      enabled: {{SANDBOX_MEMCACHED_RESOURCES_ENABLED}}

@@ -18,12 +18,16 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./images/dashboard/src:/app
-      - /Users/prabin/Desktop/k3s.osmsandbox.naxadev.com.yml:/app/kubeconfig.yml:ro
+      # - /Users/samirkoirala/Desktop/k3s.osmsandbox.naxadev.com.yml:/app/kubeconfig.yml:ro
+      - ./images/dashboard/src/kubeconfig.yml:/root/.kube/config:ro
+
     ports:
       - "8000:8000"
     extra_hosts:
-      - daring-sheathbill:192.168.71.2
-      - k3s.appzite:13.232.119.185
+      - daring-sheathbill:172.16.9.224
+      - k3d-mycluster-serverlb:192.168.65.254
+      - k3d-mycluster-server-0:192.168.65.254
+      # - k3s.appzite:host.docker.internal
     depends_on:
       - db
     # working_dir: /app
