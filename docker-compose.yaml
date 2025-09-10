@@ -23,11 +23,13 @@ services:
 
     ports:
       - "8000:8000"
-    extra_hosts:
-      - daring-sheathbill:172.16.9.224
-      - k3d-mycluster-serverlb:192.168.65.254
-      - k3d-mycluster-server-0:192.168.65.254
-      # - k3s.appzite:host.docker.internal
+    networks:
+      - default
+      - k3d-mycluster
     depends_on:
       - db
     # working_dir: /app
+
+networks:
+  k3d-mycluster:
+    external: true
