@@ -38,7 +38,12 @@ router = APIRouter()
 
 sandbox_domain = os.getenv("SANDBOX_DOMAIN", "yoursandboxdomain.here")
 
+# At the top of the file, add:
+osm_user_agent = os.getenv("OSM_USER_AGENT", "HOT-TaskingManager-API/5.0 (https://tasking-manager-production-api.hotosm.org)")
+
+# Update the module-level oauth (or per-request if you go that route):
 oauth = OAuth2Session(client_id=client_id, redirect_uri=redirect_uri, scope=osm_instance_scopes)
+oauth.headers.update({"User-Agent": osm_user_agent})
 
 
 # Custom static files to set cache control
@@ -111,15 +116,38 @@ async def redirect_sandbox(request: Request, code: str, state: str = None, db: S
     """Redirect and login in sandbox"""
 
     try:
+        logging.info(f"[redirect_sandbox] Starting OAuth flow | code={code[:10]}... | state={state}")
+        logging.info(f"[redirect_sandbox] Using OSM instance URL: {osm_instance_url}")
+        logging.info(f"[redirect_sandbox] OAuth session headers before fetch_token: {dict(oauth.headers)}")
+        logging.info(f"[redirect_sandbox] OAuth session token before fetch: {oauth.token}")
+
         # Get user data
         token = oauth.fetch_token(
-            f"{osm_instance_url}/oauth2/token", code=code, client_secret=client_secret
+            f"{osm_instance_url}/oauth2/token",
+            code=code,
+            client_secret=client_secret,
+            headers={"User-Agent": osm_user_agent}  # explicitly pass on fetch too
         )
+        logging.info(f"[redirect_sandbox] fetch_token succeeded | token keys: {list(token.keys()) if token else 'None'}")
+        logging.info(f"[redirect_sandbox] token type: {token.get('token_type')} | expires_at: {token.get('expires_at')} | scope: {token.get('scope')}")
+
         oauth.token = token
-        user_details_response = oauth.get(f"{osm_instance_url}/api/0.6/user/details.json")
+        logging.info(f"[redirect_sandbox] OAuth token set on session successfully")
+
+        logging.info(f"[redirect_sandbox] Calling user details endpoint: {osm_instance_url}/api/0.6/user/details.json")
+        user_details_response = oauth.get(
+            f"{osm_instance_url}/api/0.6/user/details.json",
+            headers={"User-Agent": osm_user_agent}  # explicitly pass on get too
+        )
+        logging.info(f"[redirect_sandbox] user details response status: {user_details_response.status_code}")
+        logging.info(f"[redirect_sandbox] user details response headers: {dict(user_details_response.headers)}")
+        logging.info(f"[redirect_sandbox] user details raw response: {user_details_response.text[:500]}")  # first 500 chars only
+
         user_details = user_details_response.json()
-        display_name = user_details.get("user").get("display_name")
-        logging.info(f"Fetched user details for: {display_name}")
+        logging.info(f"[redirect_sandbox] user details parsed JSON keys: {list(user_details.keys()) if user_details else 'None'}")
+
+        display_name = user_details.get("user", {}).get("display_name")
+        logging.info(f"[redirect_sandbox] Fetched display_name: {display_name}")
 
         session_id = state
         if session_id:
